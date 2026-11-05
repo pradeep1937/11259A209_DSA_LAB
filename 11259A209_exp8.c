@@ -1,75 +1,146 @@
+
 #include <stdio.h>
 #include <stdlib.h>
+
 struct Node {
-int data;
-struct Node *next;
+    int data;
+    struct Node *next;
 };
-struct Node *rear = NULL; /* rear->next points to front (circular) */
+
+struct Node *rear = NULL;
+
+/* Enqueue operation */
 void enqueue(int val) {
-struct Node *newNode = (struct Node *) malloc(sizeof(struct Node));
-newNode->data = val;
-if (rear == NULL) {
-newNode->next = newNode;
-rear = newNode;
-} else {
-newNode->next = rear->next;
-rear->next = newNode;
-rear = newNode;
+    struct Node *newNode =
+        (struct Node *)malloc(sizeof(struct Node));
+
+    if (newNode == NULL) {
+        printf("Memory allocation failed.\n");
+        return;
+    }
+
+    newNode->data = val;
+
+    if (rear == NULL) {
+        newNode->next = newNode;
+        rear = newNode;
+    } else {
+        newNode->next = rear->next;
+        rear->next = newNode;
+        rear = newNode;
+    }
+
+    printf("%d enqueued to circular queue.\n", val);
 }
-printf("%d enqueued to circular queue.\n", val);
-}
+
+/* Dequeue operation */
 void dequeue() {
-if (rear == NULL) {
-printf("Queue Underflow\n");
-return;
+    if (rear == NULL) {
+        printf("Queue Underflow\n");
+        return;
+    }
+
+    struct Node *front = rear->next;
+
+    printf("%d dequeued from circular queue.\n",
+           front->data);
+
+    if (front == rear) {
+        rear = NULL;
+    } else {
+        rear->next = front->next;
+    }
+
+    free(front);
 }
-struct Node *front = rear->next;
-printf("%d dequeued from circular queue.\n", front->data);
-if (front == rear) {
-rear = NULL;
-} else {
-rear->next = front->next;
-}
-free(front);
-}
+
+/* Display operation */
 void display() {
-if (rear == NULL) {
-printf("Queue is empty.\n");
-return;
+    if (rear == NULL) {
+        printf("Queue is empty.\n");
+        return;
+    }
+
+    struct Node *temp = rear->next;
+
+    printf("Circular Queue elements: ");
+
+    do {
+        printf("%d ", temp->data);
+        temp = temp->next;
+    } while (temp != rear->next);
+
+    printf("\n");
 }
-struct Node *temp = rear->next; /* front */
-printf("Circular Queue elements: ");
-do {
-printf("%d ", temp->data);
-temp = temp->next;
-} while (temp != rear->next);
-printf("\n");
+
+/* Free remaining nodes */
+void freeQueue() {
+    if (rear == NULL)
+        return;
+
+    struct Node *front = rear->next;
+    rear->next = NULL;
+
+    while (front != NULL) {
+        struct Node *temp = front;
+        front = front->next;
+        free(temp);
+    }
+
+    rear = NULL;
 }
+
+/* Main function */
 int main() {
-int choice, val;
-do {
-printf("\n--- Circular Queue (Linked List) Menu ---\n");
-printf("1. Enqueue\n2. Dequeue\n3. Display\n4. Exit\n");
-printf("Enter your choice: ");
-scanf("%d", &choice);
-switch (choice) {
-case 1:
-printf("Enter value to enqueue: ");
-scanf("%d", &val);
-enqueue(val);
-break;
-case 2:
-dequeue();
-break;
-case 3:
-display();
-break;
-case 4:
-printf("Exiting program.\n");
-break;
-default:
-printf("Invalid choice.\n");
-}
-} while (choice != 4);
-return 0;
+    int choice, val;
+
+    do {
+        printf("\n--- Circular Queue (Linked List) Menu ---\n");
+        printf("1. Enqueue\n");
+        printf("2. Dequeue\n");
+        printf("3. Display\n");
+        printf("4. Exit\n");
+
+        printf("Enter your choice: ");
+
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid input.\n");
+            freeQueue();
+            return 1;
+        }
+
+        switch (choice) {
+            case 1:
+                printf("Enter value to enqueue: ");
+
+                if (scanf("%d", &val) != 1) {
+                    printf("Invalid input.\n");
+                    freeQueue();
+                    return 1;
+                }
+
+                enqueue(val);
+                break;
+
+            case 2:
+                dequeue();
+                break;
+
+            case 3:
+                display();
+                break;
+
+            case 4:
+                printf("Exiting program.\n");
+                break;
+
+            default:
+                printf("Invalid choice.\n");
+        }
+
+    } while (choice != 4);
+
+    freeQueue();
+
+    return 0;
 }
