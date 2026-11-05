@@ -1,0 +1,28 @@
+
+name: Compile C Programs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile C programs
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path output
+          Get-ChildItem -Recurse -Filter *.c |
+          ForEach-Object {
+            gcc $_.FullName -o "output/$($_.BaseName).exe"
+          }
+
+      - name: Upload EXE files
+        uses: actions/upload-artifact@v4
+        with:
+          name: C-programs-EXE
+          path: output/*.exe
